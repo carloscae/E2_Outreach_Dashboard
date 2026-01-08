@@ -1,7 +1,7 @@
 import { getAnalyzedSignalsWithDetails, getAnalyzedSignalStats } from "@/lib/db/analyzed-signals";
 import { SignalsTable } from "@/components/signals/signals-table";
 import { SignalFilters } from "@/components/signals/signal-filters";
-import type { Priority } from "@/types/database";
+import type { Priority, DashboardSignal, SignalEvidence } from "@/types/database";
 
 interface PageProps {
     searchParams: Promise<{
@@ -25,19 +25,27 @@ export default async function SignalsPage({ searchParams }: PageProps) {
 
     const signalsWithDetails = await getAnalyzedSignalsWithDetails(priority, 100);
 
-    // Transform to flat structure for table
-    const signals = signalsWithDetails.map(item => ({
+    // Transform to flat DashboardSignal structure for table
+    const signals: DashboardSignal[] = signalsWithDetails.map(item => ({
         id: item.id,
-        signal_id: item.signal_id,
         entity_name: item.signal?.entity_name || "Unknown",
-        entity_type: item.signal?.entity_type || "unknown",
+        entity_type: (item.signal?.entity_type || "bookmaker") as DashboardSignal["entity_type"],
         geo: item.signal?.geo || "N/A",
         signal_type: item.signal?.signal_type || "unknown",
-        final_score: item.final_score,
         preliminary_score: null,
+        collected_at: item.signal?.collected_at || item.analyzed_at,
+        // Evidence data from signals table
+        evidence: (item.signal?.evidence || []) as SignalEvidence[],
+        source_urls: item.signal?.source_urls || null,
+        // Analysis data from analyzed_signals table
+        final_score: item.final_score,
         priority: item.priority,
-        analyzed_at: item.analyzed_at,
-        collected_at: item.analyzed_at, // Use analyzed_at as fallback
+        score_breakdown: item.score_breakdown,
+        ai_reasoning: item.ai_reasoning,
+        risk_flags: item.risk_flags,
+        recommended_actions: item.recommended_actions,
+        // Feedback count (not available in this query, default to 0)
+        feedback_count: 0,
     }));
 
     // Apply client-side sorting if needed
@@ -51,7 +59,7 @@ export default async function SignalsPage({ searchParams }: PageProps) {
                 break;
             case "date":
                 sortedSignals.sort((a, b) =>
-                    new Date(b.analyzed_at).getTime() - new Date(a.analyzed_at).getTime()
+                    new Date(b.collected_at).getTime() - new Date(a.collected_at).getTime()
                 );
                 break;
             case "name":

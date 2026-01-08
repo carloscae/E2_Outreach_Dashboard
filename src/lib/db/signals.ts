@@ -121,9 +121,15 @@ export async function getDashboardSignals(
       signal_type,
       preliminary_score,
       collected_at,
+      evidence,
+      source_urls,
       analyzed_signals (
         final_score,
-        priority
+        priority,
+        score_breakdown,
+        ai_reasoning,
+        risk_flags,
+        recommended_actions
       ),
       feedback (
         id
@@ -154,8 +160,17 @@ export async function getDashboardSignals(
         signal_type: row.signal_type,
         preliminary_score: row.preliminary_score,
         collected_at: row.collected_at,
+        // Evidence data
+        evidence: row.evidence ?? [],
+        source_urls: row.source_urls ?? null,
+        // Analysis data
         final_score: row.analyzed_signals?.[0]?.final_score ?? null,
         priority: row.analyzed_signals?.[0]?.priority ?? null,
+        score_breakdown: row.analyzed_signals?.[0]?.score_breakdown ?? null,
+        ai_reasoning: row.analyzed_signals?.[0]?.ai_reasoning ?? null,
+        risk_flags: row.analyzed_signals?.[0]?.risk_flags ?? null,
+        recommended_actions: row.analyzed_signals?.[0]?.recommended_actions ?? null,
+        // Feedback
         feedback_count: row.feedback?.length ?? 0,
     }));
 }

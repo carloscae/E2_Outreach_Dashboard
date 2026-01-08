@@ -32,56 +32,67 @@ export function calculatePriority(score: number): Priority {
 const ANALYZER_SYSTEM_PROMPT = `You are the Analyzer Agent for E2's Market Intelligence system.
 
 ## Your Mission
-Score and prioritize signals discovered by the Collector Agent. Your analysis helps the Sales/BD team focus on the most promising partnership opportunities.
+Score and prioritize signals to help Sales/BD focus on the BEST opportunities.
 
 ## Scoring Framework (0-14 total points)
 
 ### 1. Market Entry Momentum (0-4 points)
-Evaluate evidence of active market expansion:
-- 4: Multiple strong signals (new office, major sponsorship, app launch)
-- 3: Clear expansion activity (licensing, partnerships)
-- 2: Moderate activity (job postings, minor news)
-- 1: Weak signals (rumors, speculation)
+Evidence of active market expansion:
+- 4: Multiple strong signals (new office + major sponsorship + app launch)
+- 3: Clear expansion (licensing approval, major partnership)
+- 2: Moderate activity (job postings, minor news, single event)
+- 1: Weak signals (rumors, speculation, no concrete evidence)
 - 0: No evidence of expansion
 
 ### 2. E2 Partnership Fit (0-4 points)
-Assess alignment with E2's target profile:
-- 4: Perfect fit (target geo, target verticals, not a competitor)
-- 3: Strong fit (most criteria match)
-- 2: Moderate fit (some alignment)
-- 1: Weak fit (limited alignment)
-- 0: Poor fit or already E2 partner
+Alignment with E2's target profile:
+- 4: Perfect fit (Brazil/target geo, sports betting focus, NOT existing partner)
+- 3: Strong fit (right geo, relevant verticals)
+- 2: Moderate fit (adjacent market or partial overlap)
+- 1: Weak fit (different focus, limited opportunity)
+- 0: Poor fit OR already E2 partner
 
 ### 3. Actionability (0-3 points)
-How easy is it to take action on this opportunity:
-- 3: Clear contact path, decision maker identified, good timing
-- 2: Some contact info, timing is reasonable
-- 1: Limited info, would require significant research
+How easy to pursue this opportunity:
+- 3: Clear contact path (found LinkedIn, email, or decision maker)
+- 2: Some contact info available (company website, general contact)
+- 1: Would require significant research to find contact
 - 0: No clear path to action
 
 ### 4. Data Confidence (0-3 points)
-Quality and reliability of the intelligence:
-- 3: Multiple credible sources, recent data (< 7 days)
-- 2: Single credible source, recent data
-- 1: Single source, older data (7-30 days)
-- 0: Unreliable source or very old data
+Quality of intelligence:
+- 3: Multiple credible sources, data < 7 days old
+- 2: Single credible source, data < 7 days old  
+- 1: Single source OR data 7-30 days old
+- 0: Unreliable source OR data > 30 days old
 
-## Risk Flags
-Identify potential concerns:
-- **regulatory**: Operating in grey markets, license issues
-- **reputational**: Negative press, fraud allegations
-- **financial**: Solvency concerns, unpaid debts
+## CRITICAL: Score Calibration
+- Most signals should score between 4-10
+- Scores of 12+ should be RARE (< 10% of signals)
+- Scores of 11-14 require EXCEPTIONAL evidence
+- Be SKEPTICAL - default to lower scores when uncertain
+- A single news article is NOT enough for high momentum scores
 
-## Output Format
-For each signal, provide:
-1. Score breakdown for each criterion
-2. Total score (0-14)
-3. Priority level (HIGH ≥10, MEDIUM 7-9, LOW <7)
-4. Risk flags if any
-5. Recommended actions (1-3 bullet points)
-6. Brief reasoning for your assessment
+## Risk Flags (identify ALL that apply)
+- **regulatory**: Grey market operations, license issues, regulatory investigations
+- **reputational**: Negative press, fraud allegations, player complaints
+- **financial**: Solvency concerns, unpaid debts, investor issues
 
-Be objective and conservative. It's better to under-score than over-score.`;
+## Recommended Actions (REQUIRED: Provide 1-3 specific actions)
+Examples by priority:
+- HIGH: "Schedule intro call this week via LinkedIn", "Send partnership deck to [name]"
+- MEDIUM: "Add to monitoring list", "Research decision maker contacts"
+- LOW: "Track for future opportunities", "Monitor for expansion news"
+
+## Per-Criterion Reasoning (REQUIRED)
+For EACH score component, explain WHY you gave that score:
+- momentum_reasoning: "Scored 3 because Flamengo sponsorship is significant but only one source"
+- fit_reasoning: "Scored 4 because Brazil focus + sports betting + not in E2 system"
+- actionability_reasoning: "Scored 2 because website exists but no direct contact found"
+- confidence_reasoning: "Scored 2 because single article from SBC News, published 3 days ago"
+
+Be objective. Under-scoring is better than over-scoring.`;
+
 
 // ============================================================
 // Tool Definitions
@@ -132,11 +143,27 @@ const ANALYZER_TOOLS: AgentTool[] = [
                 },
                 recommended_actions: {
                     type: 'array',
-                    description: 'List of 1-3 recommended actions',
+                    description: 'List of 1-3 SPECIFIC recommended actions (e.g., "Research CEO contact on LinkedIn")',
                 },
                 reasoning: {
                     type: 'string',
-                    description: 'Brief explanation of your assessment',
+                    description: 'Overall assessment summary',
+                },
+                momentum_reasoning: {
+                    type: 'string',
+                    description: 'Why this momentum score? Cite specific evidence.',
+                },
+                fit_reasoning: {
+                    type: 'string',
+                    description: 'Why this fit score? Explain geo/vertical alignment.',
+                },
+                actionability_reasoning: {
+                    type: 'string',
+                    description: 'Why this actionability score? What contact info exists?',
+                },
+                confidence_reasoning: {
+                    type: 'string',
+                    description: 'Why this confidence score? How many sources, how recent?',
                 },
             },
             required: [
@@ -145,7 +172,12 @@ const ANALYZER_TOOLS: AgentTool[] = [
                 'e2_partnership_fit',
                 'actionability',
                 'data_confidence',
+                'recommended_actions',
                 'reasoning',
+                'momentum_reasoning',
+                'fit_reasoning',
+                'actionability_reasoning',
+                'confidence_reasoning',
             ],
         },
     },
@@ -192,6 +224,10 @@ async function handleScoreSignal(input: {
     risk_notes?: string;
     recommended_actions?: string[];
     reasoning: string;
+    momentum_reasoning?: string;
+    fit_reasoning?: string;
+    actionability_reasoning?: string;
+    confidence_reasoning?: string;
 }): Promise<{ success: boolean; analyzed_signal_id?: string; error?: string }> {
     // Validate scores
     const momentum = Math.min(4, Math.max(0, input.market_entry_momentum));
@@ -317,6 +353,8 @@ Remember: Score each signal using the 0-14 framework and provide clear reasoning
     try {
         while (iterations < MAX_ITERATIONS) {
             iterations++;
+            console.log(`[Analyzer] === Iteration ${iterations}/${MAX_ITERATIONS} ===`);
+            console.log(`[Analyzer] Signals analyzed so far: ${results.length}/${signals.length}`);
 
             const response = await runAgent({
                 systemPrompt: ANALYZER_SYSTEM_PROMPT,
@@ -354,17 +392,24 @@ Remember: Score each signal using the 0-14 framework and provide clear reasoning
                 };
 
                 if (name === 'score_signal') {
-                    const result = await handleScoreSignal(toolInput as Parameters<typeof handleScoreSignal>[0]);
-                    if (result.success) {
-                        const score = (toolInput.market_entry_momentum as number) +
-                            (toolInput.e2_partnership_fit as number) +
-                            (toolInput.actionability as number) +
-                            (toolInput.data_confidence as number);
-                        results.push({
-                            priority: calculatePriority(score),
-                            score,
-                        });
+                    const scoreInput = toolInput as Parameters<typeof handleScoreSignal>[0];
+                    const score = (scoreInput.market_entry_momentum as number) +
+                        (scoreInput.e2_partnership_fit as number) +
+                        (scoreInput.actionability as number) +
+                        (scoreInput.data_confidence as number);
+                    const priority = calculatePriority(score);
+                    console.log(`[Analyzer] 📊 score_signal: ${scoreInput.signal_id}`);
+                    console.log(`[Analyzer]    Score: ${score}/14 (${priority})`);
+                    console.log(`[Analyzer]    Breakdown: M=${scoreInput.market_entry_momentum} F=${scoreInput.e2_partnership_fit} A=${scoreInput.actionability} C=${scoreInput.data_confidence}`);
+                    if (scoreInput.momentum_reasoning) {
+                        console.log(`[Analyzer]    Momentum: ${String(scoreInput.momentum_reasoning).substring(0, 80)}...`);
                     }
+
+                    const result = await handleScoreSignal(scoreInput);
+                    if (result.success) {
+                        results.push({ priority, score });
+                    }
+
                     toolResults.push({
                         type: 'tool_result',
                         tool_use_id: id,

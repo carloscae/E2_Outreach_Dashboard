@@ -163,7 +163,16 @@ export interface DashboardSignal {
     signal_type: string;
     preliminary_score: number | null;
     collected_at: string;
+    // Evidence data from signals table
+    evidence: SignalEvidence[];
+    source_urls: string[] | null;
+    // Analysis data from analyzed_signals table
     final_score: number | null;
     priority: Priority | null;
+    score_breakdown: ScoreBreakdown | null;
+    ai_reasoning: string | null;
+    risk_flags: RiskFlags | null;
+    recommended_actions: string[] | null;
+    // Feedback count
     feedback_count: number;
 }

@@ -239,6 +239,8 @@ export async function runCollector(
     try {
         while (iterations < MAX_ITERATIONS) {
             iterations++;
+            console.log(`[Collector] === Iteration ${iterations}/${MAX_ITERATIONS} ===`);
+            console.log(`[Collector] Queries so far: ${searchQueries.length} | Signals stored: ${signalsStored.length}`);
 
             const response = await runAgent({
                 systemPrompt,
@@ -266,6 +268,16 @@ export async function runCollector(
 
             if (toolUses.length === 0) {
                 // Agent finished (no more tool calls)
+                // Enforce minimum 3 queries
+                if (searchQueries.length < 3) {
+                    console.log(`[Collector] ⚠️ Only ${searchQueries.length} queries. Requesting more searches...`);
+                    messages.push({
+                        role: 'user',
+                        content: `You've only performed ${searchQueries.length} search(es). Please perform at least 3 searches using DIFFERENT signal categories (market_entry, expansion, sponsorship, licensing, growth). Try queries you haven't used yet.`,
+                    });
+                    continue;
+                }
+                console.log(`[Collector] ✅ Agent completed with ${searchQueries.length} queries, ${signalsStored.length} signals`);
                 break;
             }
 
@@ -284,11 +296,18 @@ export async function runCollector(
                 if (name === 'search_news') {
                     const searchInput = toolInput as { query: string; days_back?: number };
                     searchQueries.push(searchInput.query);
+                    console.log(`[Collector] 🔍 search_news: "${searchInput.query}"`);
                     result = await handleSearchNews(searchInput, geo);
+                    const articles = (result as { articles?: unknown[] }).articles;
+                    console.log(`[Collector]    → Found ${articles?.length || 0} articles`);
+
                 } else if (name === 'check_e2_partner') {
                     const checkInput = toolInput as { entity_name: string };
+                    console.log(`[Collector] 🔎 check_e2_partner: "${checkInput.entity_name}"`);
                     const partnerCheck = await checkE2Partnership(checkInput.entity_name);
+                    console.log(`[Collector]    → Tier: ${partnerCheck.tier}, Opportunity: ${partnerCheck.isOpportunity}`);
                     result = {
+
                         tier: partnerCheck.tier,
                         is_opportunity: partnerCheck.isOpportunity,
                         is_existing_affiliate: partnerCheck.tier === 'AFFILIATE_PARTNER',
@@ -325,6 +344,10 @@ export async function runCollector(
                         preliminary_score: number;
                         reasoning?: string;
                     };
+                    console.log(`[Collector] 💾 store_signal: "${storeInput.entity_name}" (${storeInput.signal_type}, score: ${storeInput.preliminary_score})`);
+                    if (storeInput.reasoning) {
+                        console.log(`[Collector]    Reasoning: ${storeInput.reasoning.substring(0, 100)}...`);
+                    }
                     result = await handleStoreSignal(storeInput, geo, agentRun.id);
 
                     if ((result as { success: boolean }).success) {

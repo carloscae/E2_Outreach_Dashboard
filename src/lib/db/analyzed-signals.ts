@@ -125,7 +125,7 @@ export async function getHighPrioritySignals(limit = 20): Promise<AnalyzedSignal
 export async function getAnalyzedSignalsWithDetails(
     priority?: Priority,
     limit = 50
-): Promise<Array<AnalyzedSignal & { signal: { entity_name: string; entity_type: string; geo: string; signal_type: string } }>> {
+): Promise<Array<AnalyzedSignal & { signal: { entity_name: string; entity_type: string; geo: string; signal_type: string; evidence: unknown[]; source_urls: string[] | null; collected_at: string } }>> {
     let query = supabase
         .from('analyzed_signals')
         .select(`
@@ -134,7 +134,10 @@ export async function getAnalyzedSignalsWithDetails(
         entity_name,
         entity_type,
         geo,
-        signal_type
+        signal_type,
+        evidence,
+        source_urls,
+        collected_at
       )
     `)
         .order('final_score', { ascending: false })
@@ -147,7 +150,7 @@ export async function getAnalyzedSignalsWithDetails(
     const { data, error } = await query;
 
     if (error) throw error;
-    return data as Array<AnalyzedSignal & { signal: { entity_name: string; entity_type: string; geo: string; signal_type: string } }>;
+    return data as Array<AnalyzedSignal & { signal: { entity_name: string; entity_type: string; geo: string; signal_type: string; evidence: unknown[]; source_urls: string[] | null; collected_at: string } }>;
 }
 
 // ============================================================

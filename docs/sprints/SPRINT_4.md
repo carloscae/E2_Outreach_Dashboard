@@ -20,15 +20,17 @@
 
 ### S4-01: Expand Dashboard Query with Evidence
 **Role:** UI Developer
-**Status:** `[ ]` Not Started
+**Status:** `[x]` Complete
+**Completed By:** Canvas-UI
+**Completed At:** 2026-01-08T23:20:00
 **Dependencies:** S3-01
 **Estimated:** 2 hours
 
 **Deliverables:**
-- [ ] Update `getDashboardSignals` to include evidence, source_urls
-- [ ] Include score_breakdown, ai_reasoning, risk_flags from analyzed_signals
-- [ ] Expand DashboardSignal type with new fields
-- [ ] Update API response with full signal data
+- [x] Update `getDashboardSignals` to include evidence, source_urls
+- [x] Include score_breakdown, ai_reasoning, risk_flags from analyzed_signals
+- [x] Expand DashboardSignal type with new fields
+- [x] Update API response with full signal data
 
 **Files:**
 - `src/lib/db/signals.ts` (UPDATE)
@@ -39,16 +41,18 @@
 
 ### S4-02: Evidence & Reasoning UI
 **Role:** UI Developer
-**Status:** `[ ]` Not Started
+**Status:** `[x]` Complete
+**Completed By:** Canvas-UI
+**Completed At:** 2026-01-08T23:35:00
 **Dependencies:** S4-01
 **Estimated:** 3 hours
 
 **Deliverables:**
-- [ ] Show evidence links (clickable headlines with source)
-- [ ] Display score breakdown (Momentum, Fit, Actionability, Confidence)
-- [ ] Show AI reasoning in expandable panel
-- [ ] Display risk flags with visual indicators
-- [ ] Add recommended actions section
+- [x] Show evidence links (clickable headlines with source)
+- [x] Display score breakdown (Momentum, Fit, Actionability, Confidence)
+- [x] Show AI reasoning in expandable panel
+- [x] Display risk flags with visual indicators
+- [x] Add recommended actions section
 
 **Files:**
 - `src/components/signals/signal-card.tsx` (UPDATE)
@@ -60,16 +64,18 @@
 
 ### S4-03: Collector Agent Intelligence
 **Role:** State Engineer
-**Status:** `[ ]` Not Started
+**Status:** `[x]` Complete
+**Completed By:** Schema-State
+**Completed At:** 2026-01-08T23:35:00
 **Dependencies:** None
 **Estimated:** 3 hours
 
 **Deliverables:**
-- [ ] Add verbose logging to see Claude's decision-making
-- [ ] Improve collector prompt to require reasoning for each signal
-- [ ] Force multiple search iterations (min 3 queries)
-- [ ] Require source diversification
-- [ ] Store detailed evidence with each signal
+- [x] Add verbose logging to see Claude's decision-making
+- [x] Improve collector prompt to require reasoning for each signal
+- [x] Force multiple search iterations (min 3 queries)
+- [x] Require source diversification (5 signal categories)
+- [x] Store detailed evidence with each signal
 
 **Files:**
 - `src/lib/agents/collector.ts` (UPDATE)
@@ -79,15 +85,17 @@
 
 ### S4-04: Analyzer Agent Intelligence
 **Role:** State Engineer
-**Status:** `[ ]` Not Started
+**Status:** `[x]` Complete
+**Completed By:** Schema-State
+**Completed At:** 2026-01-08T23:40:00
 **Dependencies:** S4-03
 **Estimated:** 2 hours
 
 **Deliverables:**
-- [ ] Require detailed ai_reasoning for each score component
-- [ ] Generate specific recommended_actions
-- [ ] Detect and explain risk_flags
-- [ ] Improve score calibration (avoid all scores being 6)
+- [x] Require detailed ai_reasoning for each score component
+- [x] Generate specific recommended_actions
+- [x] Detect and explain risk_flags
+- [x] Improve score calibration (12+ scores rare)
 
 **Files:**
 - `src/lib/agents/analyzer.ts` (UPDATE)
@@ -97,17 +105,19 @@
 
 ### S4-05: Pipeline Verification
 **Role:** QA Agent
-**Status:** `[ ]` Not Started
+**Status:** `[x]` Complete
+**Completed By:** Sentinel-QA
+**Completed At:** 2026-01-08T23:50:00
 **Dependencies:** S4-01, S4-02, S4-03, S4-04
 **Estimated:** 2 hours
 
 **Deliverables:**
-- [ ] Run full pipeline: Collect → Analyze → Dashboard
-- [ ] Verify evidence appears in UI
-- [ ] Verify score breakdown visible
-- [ ] Verify AI reasoning visible
-- [ ] Document signal quality improvements
-- [ ] Compare before/after signal quality
+- [x] Run full pipeline: Collect → Analyze → Dashboard
+- [x] Verify evidence appears in UI
+- [x] Verify score breakdown visible
+- [x] Verify AI reasoning visible
+- [x] Document signal quality improvements
+- [x] Compare before/after signal quality
 
 **Files:**
 - `docs/testing/SIGNAL_QUALITY.md` (NEW)
@@ -116,12 +126,12 @@
 
 ## Success Criteria
 
-- [ ] Evidence (headlines, URLs) visible on signal cards
-- [ ] Score breakdown shows all 4 components
-- [ ] AI reasoning explains why each signal was scored
-- [ ] Collector generates signals with detailed evidence
-- [ ] Analyzer produces varied scores (not all 6)
-- [ ] Full pipeline produces usable, sellable output
+- [x] Evidence (headlines, URLs) visible on signal cards
+- [x] Score breakdown shows all 4 components
+- [x] AI reasoning explains why each signal was scored
+- [x] Collector generates signals with detailed evidence
+- [x] Analyzer produces varied scores (not all 6)
+- [x] Full pipeline produces usable, sellable output
 
 ---
 
@@ -135,3 +145,8 @@
 
 | Task ID | Agent | Completed At | Notes |
 |---------|-------|--------------|-------|
+| S4-01 | Canvas-UI | 2026-01-08T23:20:00 | Expanded DashboardSignal type and query with evidence, score_breakdown, ai_reasoning, risk_flags |
+| S4-02 | Canvas-UI | 2026-01-08T23:35:00 | Created score-breakdown.tsx and evidence-panel.tsx, expandable table rows |
+| S4-03 | Schema-State | 2026-01-08T23:35:00 | Enhanced prompt with 5 signal categories, verbose logging, min 3 queries |
+| S4-04 | Schema-State | 2026-01-08T23:40:00 | Per-criterion reasoning, score calibration, specific action templates |
+| S4-05 | Sentinel-QA | 2026-01-08T23:50:00 | Pipeline verification, signal quality documentation, all features working |
