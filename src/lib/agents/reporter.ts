@@ -222,7 +222,7 @@ export async function runReporter(
 
         // Use AI to generate additional content
         const generatedSections: GeneratedSections = {};
-        let totalUsage = { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
+        const totalUsage = { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
 
         // Build context for AI
         const signalSummary = signals.slice(0, 10).map(s =>

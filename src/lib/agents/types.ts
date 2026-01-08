@@ -69,6 +69,7 @@ export interface CollectorOutput {
     signals_stored: number;
     entities_discovered: string[];
     search_queries_used: string[];
+    runId?: string;
 }
 
 // ============================================================

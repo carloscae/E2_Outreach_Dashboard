@@ -412,6 +412,13 @@ export default function TestPage() {
                     >
                         {isLoading ? <span className="animate-spin">⏳</span> : '📊'} Dashboard
                     </button>
+
+                    <a
+                        href="/dashboard"
+                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg font-medium transition-colors flex items-center gap-2"
+                    >
+                        🖥️ Open Dashboard UI
+                    </a>
                 </div>
 
                 {/* Pipeline Status */}

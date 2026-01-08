@@ -309,7 +309,7 @@ Remember: Score each signal using the 0-14 framework and provide clear reasoning
         },
     ];
 
-    let totalUsage = { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
+    const totalUsage = { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
     const results: { priority: Priority; score: number }[] = [];
     let iterations = 0;
     const MAX_ITERATIONS = 10;

@@ -234,7 +234,7 @@ export async function runCollector(
 
     let iterations = 0;
     const MAX_ITERATIONS = 10;
-    let totalUsage = { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
+    const totalUsage = { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
 
     try {
         while (iterations < MAX_ITERATIONS) {
