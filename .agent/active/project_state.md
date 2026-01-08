@@ -1,13 +1,13 @@
 # Project State
 
-**Last Updated:** 2025-01-08T14:00:00+01:00
-**Updated By:** Product Lead (Initial Bootstrap)
+**Last Updated:** 2025-01-08T20:02:00+01:00
+**Updated By:** Product Lead
 
 ---
 
 ## Current Sprint
 
-**Sprint 1: POC Foundation**
+**Sprint 3: POC Dashboard** 🔄 In Progress
 Progress: 0/5 tasks complete
 
 | Status | Count |
@@ -18,43 +18,42 @@ Progress: 0/5 tasks complete
 
 ---
 
-## Sprint 1 Tasks
+## Sprint 3 Tasks
 
-| ID | Task | Role | Status | Dependencies |
-|----|------|------|--------|--------------|
-| S1-01 | Next.js Setup | Platform | ⬜ | None |
-| S1-02 | External Services | Platform | ⬜ | S1-01 |
-| S1-03 | Database Schema | State | ⬜ | S1-02 |
-| S1-04 | Collector Agent | State | ⬜ | S1-03 |
-| S1-05 | Basic API Routes | UI | ⬜ | S1-04 |
+| ID | Task | Role | Status | Est. |
+|----|------|------|--------|------|
+| S3-01 | Dashboard + Signal Cards | UI | ⬜ | 4h |
+| S3-02 | Filtering + Sorting | UI | ⬜ | 3h |
+| S3-03 | Feedback Mechanism | UI | ⬜ | 3h |
+| S3-04 | Report Archive | State | ⬜ | 2h |
+| S3-05 | Integration Test | QA | ⬜ | 2h |
 
----
-
-## Blockers
-
-*None currently*
+**Total Estimated:** ~14 hours
 
 ---
 
-## Next Priority
+## Task Dependencies
 
-1. **S1-01** — Next.js setup (unblocks everything)
-2. **S1-02** — External services (blocked by S1-01)
-3. **S1-03** — Database schema (blocked by S1-02)
-
----
-
-## Recent Activity
-
-| Date | Agent | Activity |
-|------|-------|----------|
-| 2025-01-08 | Product Lead | Initial project bootstrap |
+```
+S2-01 (Analyzer) ─→ S3-01 (Dashboard) ─┬→ S3-02 (Filters)
+                                        └→ S3-03 (Feedback)
+S2-02 (Reporter) ─→ S3-04 (Reports)           ↓
+                                        S3-05 (Test)
+```
 
 ---
 
-## Notes
+## Previous Sprints
 
-- **POC Timeline:** 4 weeks starting 2025-01-08
-- **Budget:** $0 for POC (free tiers only)
-- **Success Criteria:** 60%+ useful signals, 2+ unknown discoveries
-- **Stakeholders:** Sales/BD team for feedback
+| Sprint | Status | Tasks |
+|--------|--------|-------|
+| Sprint 1: POC Foundation | ✅ Complete | 5/5 |
+| Sprint 2: POC Intelligence | ✅ Complete | 5/5 |
+
+---
+
+## Current Signals
+
+2 signals in database from test runs:
+- Br4Bet (score: 6, LOW)
+- Bet da Sorte (score: 6, LOW)
