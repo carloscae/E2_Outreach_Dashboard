@@ -6,7 +6,10 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { runCollector } from '@/lib/agents/collector';
+import { runArticleFirstCollector } from '@/lib/agents/article-collector';
+// Alternative collectors:
+// import { runLightweightCollector } from '@/lib/agents/lightweight-collector';
+// import { runCollector } from '@/lib/agents/collector';
 
 export async function POST(request: NextRequest) {
     try {
@@ -32,12 +35,12 @@ export async function POST(request: NextRequest) {
             // Empty body is ok, use defaults
         }
 
-        const geo = body.geo || 'br'; // Default to Brazil for POC
-        const daysBack = body.daysBack || 7;
+        const geo = body.geo || 'br';
+        const daysBack = body.daysBack || 14;
 
-        console.log(`[API/collect] Starting collection for ${geo}, ${daysBack} days back`);
+        console.log(`[API/collect] Starting article-first collection for ${geo}, ${daysBack} days back`);
 
-        const result = await runCollector({
+        const result = await runArticleFirstCollector({
             geo,
             daysBack,
         });
@@ -55,20 +58,19 @@ export async function POST(request: NextRequest) {
 
         console.log('[API/collect] Collection complete:', result.data);
 
-        // Transform to camelCase for frontend
+        // Transform for frontend
         const responseData = result.data ? {
             signalsFound: result.data.signals_found,
             signalsStored: result.data.signals_stored,
             entitiesDiscovered: result.data.entities_discovered,
-            searchQueriesUsed: result.data.search_queries_used,
-            runId: result.data.runId || 'collect-run',
+            articlesProcessed: result.data.articles_processed,
+            runId: 'article-first-collect-run',
             geo: geo,
         } : null;
 
         return NextResponse.json({
             success: true,
             data: responseData,
-            usage: result.usage,
         });
     } catch (err) {
         console.error('[API/collect] Exception:', err);

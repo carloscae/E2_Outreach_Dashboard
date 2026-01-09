@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { RegulatoryNewsCards } from "@/components/dashboard/regulatory-news-cards";
 
 export default async function DashboardPage() {
     // Get stats
@@ -22,6 +23,8 @@ export default async function DashboardPage() {
 
     return (
         <div className="space-y-6">
+            {/* Regulatory News Cards - requires user action */}
+            <RegulatoryNewsCards />
             {/* Stats Overview */}
             <div className="grid gap-4 md:grid-cols-3">
                 <Card>
