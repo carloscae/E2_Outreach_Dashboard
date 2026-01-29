@@ -125,7 +125,7 @@ export async function getHighPrioritySignals(limit = 20): Promise<AnalyzedSignal
 export async function getAnalyzedSignalsWithDetails(
     priority?: Priority,
     limit = 50
-): Promise<Array<AnalyzedSignal & { signal: { entity_name: string; entity_type: string; geo: string; signal_type: string; evidence: unknown[]; source_urls: string[] | null; collected_at: string } }>> {
+): Promise<Array<AnalyzedSignal & { signal: { entity_name: string; entity_type: string; geo: string; signal_type: string; evidence: unknown[]; source_urls: string[] | null; collected_at: string; signal_category: string | null; expires_at: string | null; is_archived: boolean } }>> {
     let query = supabase
         .from('analyzed_signals')
         .select(`
@@ -137,7 +137,10 @@ export async function getAnalyzedSignalsWithDetails(
         signal_type,
         evidence,
         source_urls,
-        collected_at
+        collected_at,
+        signal_category,
+        expires_at,
+        is_archived
       )
     `)
         .order('final_score', { ascending: false })
@@ -150,7 +153,7 @@ export async function getAnalyzedSignalsWithDetails(
     const { data, error } = await query;
 
     if (error) throw error;
-    return data as Array<AnalyzedSignal & { signal: { entity_name: string; entity_type: string; geo: string; signal_type: string; evidence: unknown[]; source_urls: string[] | null; collected_at: string } }>;
+    return data as Array<AnalyzedSignal & { signal: { entity_name: string; entity_type: string; geo: string; signal_type: string; evidence: unknown[]; source_urls: string[] | null; collected_at: string; signal_category: string | null; expires_at: string | null; is_archived: boolean } }>;
 }
 
 // ============================================================

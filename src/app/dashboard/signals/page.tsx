@@ -26,27 +26,37 @@ export default async function SignalsPage({ searchParams }: PageProps) {
     const signalsWithDetails = await getAnalyzedSignalsWithDetails(priority, 100);
 
     // Transform to flat DashboardSignal structure for table
-    const signals: DashboardSignal[] = signalsWithDetails.map(item => ({
-        id: item.id,
-        entity_name: item.signal?.entity_name || "Unknown",
-        entity_type: (item.signal?.entity_type || "bookmaker") as DashboardSignal["entity_type"],
-        geo: item.signal?.geo || "N/A",
-        signal_type: item.signal?.signal_type || "unknown",
-        preliminary_score: null,
-        collected_at: item.signal?.collected_at || item.analyzed_at,
-        // Evidence data from signals table
-        evidence: (item.signal?.evidence || []) as SignalEvidence[],
-        source_urls: item.signal?.source_urls || null,
-        // Analysis data from analyzed_signals table
-        final_score: item.final_score,
-        priority: item.priority,
-        score_breakdown: item.score_breakdown,
-        ai_reasoning: item.ai_reasoning,
-        risk_flags: item.risk_flags,
-        recommended_actions: item.recommended_actions,
-        // Feedback count (not available in this query, default to 0)
-        feedback_count: 0,
-    }));
+    const signals: DashboardSignal[] = signalsWithDetails.map(item => {
+        const expiresAt = item.signal?.expires_at ? new Date(item.signal.expires_at) : null;
+        const isExpired = expiresAt ? expiresAt <= new Date() : false;
+
+        return {
+            id: item.id,
+            entity_name: item.signal?.entity_name || "Unknown",
+            entity_type: (item.signal?.entity_type || "bookmaker") as DashboardSignal["entity_type"],
+            geo: item.signal?.geo || "N/A",
+            signal_type: item.signal?.signal_type || "unknown",
+            preliminary_score: null,
+            collected_at: item.signal?.collected_at || item.analyzed_at,
+            // Evidence data from signals table
+            evidence: (item.signal?.evidence || []) as SignalEvidence[],
+            source_urls: item.signal?.source_urls || null,
+            // Expiration data
+            signal_category: (item.signal?.signal_category || null) as DashboardSignal["signal_category"],
+            expires_at: item.signal?.expires_at || null,
+            is_expired: isExpired,
+            is_archived: item.signal?.is_archived || false,
+            // Analysis data from analyzed_signals table
+            final_score: item.final_score,
+            priority: item.priority,
+            score_breakdown: item.score_breakdown,
+            ai_reasoning: item.ai_reasoning,
+            risk_flags: item.risk_flags,
+            recommended_actions: item.recommended_actions,
+            // Feedback count (not available in this query, default to 0)
+            feedback_count: 0,
+        };
+    });
 
     // Apply client-side sorting if needed
     const sortedSignals = [...signals];

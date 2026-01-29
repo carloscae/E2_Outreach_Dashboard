@@ -10,6 +10,7 @@
 export type EntityType = 'bookmaker' | 'publisher' | 'app' | 'channel';
 export type Priority = 'HIGH' | 'MEDIUM' | 'LOW';
 export type AgentType = 'collector' | 'analyzer' | 'reporter';
+export type SignalCategory = 'informational' | 'time_sensitive';
 
 // ============================================================
 // Evidence & Scoring Types (JSONB fields)
@@ -69,6 +70,11 @@ export interface Signal {
     source_urls: string[] | null;
     collected_at: string;
     agent_run_id: string | null;
+    // Expiration fields
+    signal_category: SignalCategory | null;
+    expires_at: string | null;
+    ttl_days: number | null;
+    is_archived: boolean;
 }
 
 export interface AnalyzedSignal {
@@ -120,9 +126,14 @@ export interface AgentRun {
 // Insert Types (id and timestamps optional)
 // ============================================================
 
-export type SignalInsert = Omit<Signal, 'id' | 'collected_at'> & {
+export type SignalInsert = Omit<Signal, 'id' | 'collected_at' | 'signal_category' | 'expires_at' | 'ttl_days' | 'is_archived'> & {
     id?: string;
     collected_at?: string;
+    // Expiration fields are auto-set by DB trigger based on signal_type
+    signal_category?: SignalCategory | null;
+    expires_at?: string | null;
+    ttl_days?: number | null;
+    is_archived?: boolean;
 };
 
 export type AnalyzedSignalInsert = Omit<AnalyzedSignal, 'id' | 'analyzed_at'> & {
@@ -166,6 +177,11 @@ export interface DashboardSignal {
     // Evidence data from signals table
     evidence: SignalEvidence[];
     source_urls: string[] | null;
+    // Expiration data
+    signal_category: SignalCategory | null;
+    expires_at: string | null;
+    is_expired: boolean;
+    is_archived: boolean;
     // Analysis data from analyzed_signals table
     final_score: number | null;
     priority: Priority | null;

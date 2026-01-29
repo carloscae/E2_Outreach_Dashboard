@@ -57,6 +57,7 @@ export interface SignalFilters {
     to_date?: string;
     limit?: number;
     offset?: number;
+    include_archived?: boolean; // Show archived/expired signals
 }
 
 export async function getSignals(filters: SignalFilters = {}): Promise<Signal[]> {
@@ -123,6 +124,9 @@ export async function getDashboardSignals(
       collected_at,
       evidence,
       source_urls,
+      signal_category,
+      expires_at,
+      is_archived,
       analyzed_signals (
         final_score,
         priority,
@@ -146,33 +150,58 @@ export async function getDashboardSignals(
     if (filters.limit) {
         query = query.limit(filters.limit);
     }
+    // By default, exclude archived signals unless explicitly requested
+    if (!filters.include_archived) {
+        query = query.eq('is_archived', false);
+    }
 
     const { data, error } = await query;
 
     if (error) throw error;
 
+    const now = new Date();
+
     // Transform to flat dashboard format
-    return (data || []).map((row) => ({
-        id: row.id,
-        entity_name: row.entity_name,
-        entity_type: row.entity_type,
-        geo: row.geo,
-        signal_type: row.signal_type,
-        preliminary_score: row.preliminary_score,
-        collected_at: row.collected_at,
-        // Evidence data
-        evidence: row.evidence ?? [],
-        source_urls: row.source_urls ?? null,
-        // Analysis data
-        final_score: row.analyzed_signals?.[0]?.final_score ?? null,
-        priority: row.analyzed_signals?.[0]?.priority ?? null,
-        score_breakdown: row.analyzed_signals?.[0]?.score_breakdown ?? null,
-        ai_reasoning: row.analyzed_signals?.[0]?.ai_reasoning ?? null,
-        risk_flags: row.analyzed_signals?.[0]?.risk_flags ?? null,
-        recommended_actions: row.analyzed_signals?.[0]?.recommended_actions ?? null,
-        // Feedback
-        feedback_count: row.feedback?.length ?? 0,
-    }));
+    return (data || []).map((row) => {
+        const expiresAt = row.expires_at ? new Date(row.expires_at) : null;
+        const isExpired = expiresAt ? expiresAt <= now : false;
+
+        return {
+            id: row.id,
+            entity_name: row.entity_name,
+            entity_type: row.entity_type,
+            geo: row.geo,
+            signal_type: row.signal_type,
+            preliminary_score: row.preliminary_score,
+            collected_at: row.collected_at,
+            // Evidence data
+            evidence: row.evidence ?? [],
+            source_urls: row.source_urls ?? null,
+            // Expiration data
+            signal_category: row.signal_category ?? null,
+            expires_at: row.expires_at ?? null,
+            is_expired: isExpired,
+            is_archived: row.is_archived ?? false,
+            // Analysis data
+            final_score: row.analyzed_signals?.[0]?.final_score ?? null,
+            priority: row.analyzed_signals?.[0]?.priority ?? null,
+            score_breakdown: row.analyzed_signals?.[0]?.score_breakdown ?? null,
+            ai_reasoning: row.analyzed_signals?.[0]?.ai_reasoning ?? null,
+            risk_flags: row.analyzed_signals?.[0]?.risk_flags ?? null,
+            recommended_actions: row.analyzed_signals?.[0]?.recommended_actions ?? null,
+            // Feedback
+            feedback_count: row.feedback?.length ?? 0,
+        };
+    });
+}
+
+/**
+ * Get archived/expired signals for the archive view
+ */
+export async function getArchivedSignals(
+    filters: SignalFilters = {}
+): Promise<DashboardSignal[]> {
+    return getDashboardSignals({ ...filters, include_archived: true });
 }
 
 // ============================================================
